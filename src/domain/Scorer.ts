@@ -150,8 +150,13 @@ function rejectByAge(job: Job, criteria: SearchCriteria, now: Date): RejectReaso
   if (age === null) {
     return criteria.unknownDatePolicy === 'drop' ? 'date-unknown' : null
   }
-  // Inclusive boundary: "two days old" still counts as two days.
-  return age > criteria.maxAgeDays ? 'too-old' : null
+
+  // Whole days, not fractions. Sources publish a date, never a timestamp, so
+  // it parses to midnight: at 19:06 a job posted during 18 Aug measures 3.8
+  // days old. The report calls that "hace 3 dias" and the filter must agree.
+  // A fractional budget still works: --since names a day, and flooring the age
+  // keeps that day while dropping the one before it.
+  return Math.floor(age) > criteria.maxAgeDays ? 'too-old' : null
 }
 
 function rejectByLocation(eligibility: Eligibility, criteria: SearchCriteria): RejectReason | null {
