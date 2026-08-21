@@ -55,6 +55,8 @@ must_have_any: [ios, swift, swiftui, mobile, react native, kotlin, android, flut
 
 exclude_title:
   - junior
+  - jr
+  - jr.
   - intern
   - trainee
   - practicante

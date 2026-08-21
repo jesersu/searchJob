@@ -101,11 +101,20 @@ Adding a board is one file in `sources/` and one line in `sources/registry.ts`.
 | Source | Access | Server-side filter | Salary data |
 |---|---|---|---|
 | Get on Board | REST API, no key | yes | yes (USD/month) |
+| LinkedIn | public guest endpoint, no account | yes | no |
 | Torre | POST search API, no key | yes | yes (mixed currencies) |
 | Remote OK | REST API, no key | by tag | yes (USD/year) |
 | | | *tags dropped: unreliable* | |
 | We Work Remotely | RSS, fixed category | no | no |
 | Arbeitnow | REST API, paginated | no | no |
+
+**LinkedIn needs no login.** Its public guest endpoint
+(`/jobs-guest/jobs/api/seeMoreJobPostings/search`) is what serves LinkedIn's own
+logged-out search pages. No account, no session, no browser automation, and so
+no risk to anyone's account. The trade-off is thin data: guest cards carry
+title, company, location and publication date, but no description and no
+salary, so these jobs score on their title alone and rank below sources that
+publish a body.
 
 Remotive is intentionally absent: it responds 200 but returned zero mobile roles
 that survived domain filtering.
