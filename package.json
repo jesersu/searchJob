@@ -8,7 +8,8 @@
     "search": "node -e \"console.error('Usa: pnpm jobs <archivo-de-rol>  (pnpm search es un comando propio de pnpm)'); process.exit(1)\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

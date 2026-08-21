@@ -1,0 +1,21 @@
+#!/bin/sh
+# Enforces the branching model documented in CLAUDE.md.
+# Versioned on purpose: .git/hooks/ never leaves the machine that wrote it.
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+pattern='^(main|develop|feature/[0-9]{3}-[a-z0-9._-]+)$'
+
+if ! printf '%s' "$branch" | grep -Eq "$pattern"; then
+  printf '\n  Invalid branch name: %s\n\n' "$branch" >&2
+  printf '  Expected:\n' >&2
+  printf '    feature/<NNN>-<description>   e.g. feature/003-linkedin-adapter\n' >&2
+  printf '    <NNN> is three digits, <description> is lowercase kebab-case.\n\n' >&2
+  exit 1
+fi
+
+if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
+  printf '\n  Direct push to %s is not allowed. Open a pull request.\n\n' "$branch" >&2
+  exit 1
+fi
+
+exit 0
