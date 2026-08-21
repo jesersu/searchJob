@@ -21,18 +21,57 @@ const LATAM_REGIONS = [
   'central america', 'sudamerica', 'sudamérica',
 ] as const
 
-const NORTH_AMERICA = ['united states', 'usa', 'canada'] as const
+const NORTH_AMERICA_COUNTRIES = ['united states', 'usa', 'canada'] as const
+const AMERICAS_REGIONS = ['americas', 'north america'] as const
 
 const GLOBAL_TERMS = [
   'worldwide', 'anywhere', 'global', 'remote worldwide', 'fully remote',
   'any country', 'any timezone', 'remote anywhere',
 ] as const
 
-const ZONE_TERMS: Readonly<Record<string, readonly string[]>> = {
-  latam: [...LATAM_REGIONS, ...LATAM_COUNTRIES],
-  americas: [...LATAM_REGIONS, ...LATAM_COUNTRIES, ...NORTH_AMERICA, 'americas', 'north america'],
-  global: GLOBAL_TERMS,
-  worldwide: GLOBAL_TERMS,
+/**
+ * A zone has two kinds of term, and the difference matters.
+ *
+ * A **region** ("latam", "worldwide") covers the candidate's own country by
+ * definition, so it stays eligible however strict the configuration is.
+ * A **country** ("colombia", "united states") scopes a posting somewhere
+ * specific, which may or may not include the candidate.
+ */
+interface Zone {
+  readonly regions: readonly string[]
+  readonly countries: readonly string[]
+}
+
+const ZONES: Readonly<Record<string, Zone>> = {
+  latam: { regions: LATAM_REGIONS, countries: LATAM_COUNTRIES },
+  americas: {
+    regions: [...LATAM_REGIONS, ...AMERICAS_REGIONS],
+    countries: [...LATAM_COUNTRIES, ...NORTH_AMERICA_COUNTRIES],
+  },
+  global: { regions: GLOBAL_TERMS, countries: [] },
+  worldwide: { regions: GLOBAL_TERMS, countries: [] },
+}
+
+/** "perú" and "peru" are the same place. Compare without diacritics. */
+function deaccent(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+function ownCountry(criteria: SearchCriteria): string | null {
+  const raw = criteria.country?.trim().toLowerCase()
+  return raw !== undefined && raw.length > 0 ? raw : null
+}
+
+/** True when the posting must name the candidate's own country or a region. */
+function isCountryRequired(criteria: SearchCriteria): boolean {
+  return criteria.requireCountry && ownCountry(criteria) !== null
+}
+
+/** Every spelling of the candidate's country present in the zone tables. */
+function ownCountryAliases(own: string): string[] {
+  const target = deaccent(own)
+  const aliases = LATAM_COUNTRIES.filter((name) => deaccent(name) === target)
+  return aliases.length > 0 ? [...aliases] : [own]
 }
 
 /**
@@ -66,14 +105,38 @@ const OUTSIDE_PLACES = [
 /** Terms that make a posting reachable, derived from country plus zones. */
 export function allowedTerms(criteria: SearchCriteria): string[] {
   const terms = new Set<string>()
+  const own = ownCountry(criteria)
+  const strict = isCountryRequired(criteria)
 
-  if (criteria.country !== null && criteria.country.trim().length > 0) {
-    terms.add(criteria.country.trim().toLowerCase())
-  }
+  if (own !== null) for (const alias of ownCountryAliases(own)) terms.add(alias)
+
   for (const zone of criteria.zones) {
-    for (const term of ZONE_TERMS[zone] ?? [zone]) terms.add(term)
+    const definition = ZONES[zone]
+    if (definition === undefined) {
+      terms.add(zone)
+      continue
+    }
+    for (const region of definition.regions) terms.add(region)
+    // Under requireCountry, another country in the zone is not a substitute
+    // for the candidate's own.
+    if (!strict) for (const country of definition.countries) terms.add(country)
   }
   return [...terms]
+}
+
+/** Places that positively scope a posting away from the candidate. */
+function excludedPlaces(criteria: SearchCriteria, allowed: readonly string[]): string[] {
+  const excluded = new Set<string>(OUTSIDE_PLACES.filter((place) => !allowed.includes(place)))
+
+  if (isCountryRequired(criteria)) {
+    const target = deaccent(ownCountry(criteria) ?? '')
+    for (const zone of criteria.zones) {
+      for (const country of ZONES[zone]?.countries ?? []) {
+        if (deaccent(country) !== target) excluded.add(country)
+      }
+    }
+  }
+  return [...excluded]
 }
 
 export function assessEligibility(job: Job, criteria: SearchCriteria): Eligibility {
@@ -84,8 +147,7 @@ export function assessEligibility(job: Job, criteria: SearchCriteria): Eligibili
   const scope = [job.title, job.location ?? ''].join(' \n ')
   if (containsAnyTerm(scope, allowed)) return 'match'
 
-  const excluded = OUTSIDE_PLACES.filter((place) => !allowed.includes(place))
-  if (containsAnyTerm(scope, excluded)) return 'conflict'
+  if (containsAnyTerm(scope, excludedPlaces(criteria, allowed))) return 'conflict'
 
   // Nothing in the scope decides it: fall back to the body.
   return containsAnyTerm(job.description, allowed) ? 'match' : 'unknown'

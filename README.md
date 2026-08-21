@@ -183,6 +183,14 @@ title and location field set a posting's scope; a country named in the body is
 background. `location_policy` picks the strictness — `balanced` (default) drops
 conflicts, `strict` also drops unknowns, `off` scores without filtering.
 
+`require_country` is a separate axis. With it on, a posting scoped to specific
+countries must name the candidate's own: a role advertised for Colombia is not
+reachable from Peru even though both are LATAM. Regions still qualify, because
+"latam" or "worldwide" covers that country by definition, and a country list
+that happens to include it qualifies too. Measured on a live iOS/LATAM search,
+turning it on took 19 results down to 13 — the six dropped were scoped to
+Colombia and Argentina.
+
 **Adapters are responsible for honest data.** Remote OK sprays category tags
 that do not describe the role: a live run had it tag a Watchmaker, a
 Handyperson, a Valet and a Surveyor as mobile work, and 180 of its 186

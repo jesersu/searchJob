@@ -17,6 +17,7 @@ remote: required
 zones: [latam]
 country: Peru
 location_policy: balanced
+require_country: true
 min_salary_usd: 4000
 salary_target_usd: 9000
 salary_unknown_policy: keep
@@ -133,5 +134,14 @@ describe('parseRoleFile', () => {
     expect(() =>
       parseRoleFile('---\nrole: x\nqueries: [ios]\nmin_salary_usd: 4000\nsalary_target_usd: 4000\n---\n'),
     ).toThrow(/greater than/)
+  })
+
+  it('parses require_country', () => {
+    expect(parseRoleFile(VALID).criteria.requireCountry).toBe(true)
+  })
+
+  it('defaults require_country to false', () => {
+    const { criteria } = parseRoleFile('---\nrole: x\nqueries: [ios]\n---\n')
+    expect(criteria.requireCountry).toBe(false)
   })
 })
