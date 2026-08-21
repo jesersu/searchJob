@@ -4,30 +4,60 @@ Job search aggregator for a single role at a time. Queries several boards in
 parallel, normalizes every offer into one shape, deduplicates against history,
 and ranks by fit — not by whichever source happens to publish salaries.
 
-## Usage
+## Requirements
+
+Node 22 or newer (the SQLite history uses the built-in `node:sqlite`) and pnpm.
+
+## Quick start
 
 ```bash
 pnpm install
-cp roles/mobile.example.md roles/mobile.md   # then edit it for your profile
-pnpm jobs roles/mobile.md              # full ranking
-pnpm jobs roles/mobile.md --new        # only offers never seen before
-pnpm jobs roles/mobile.md --max-age 7  # published within the last 7 days
-pnpm jobs roles/mobile.md --since 2026-08-19
-pnpm jobs roles/mobile.md --limit 30
-pnpm jobs roles/mobile.md --sources getonboard,torre
-pnpm test
+cp roles/mobile.example.md roles/mobile.md
+pnpm jobs roles/mobile.md
 ```
 
-Output goes to the terminal and to `reports/<role>-<date>.md`.
+That is it. The third command runs the search and prints ranked jobs with their
+links. The template works as shipped — editing `roles/mobile.md` for your own
+stack, country and salary floor makes the ranking yours, but it is not required
+to see results.
 
-The script is `jobs`, not `search`: `pnpm search` is a pnpm built-in that queries
-the npm registry. It never runs a package script, and with `--` it silently
-returns registry results instead of failing. `pnpm run search` prints a pointer
-to the right command.
+Every run also writes `reports/<role>-<date>.md` with the full ranked list.
 
-`pnpm-workspace.yaml` sets `allowBuilds.esbuild: true`. pnpm 11 otherwise leaves
-a `set this to true or false` placeholder there, and every `pnpm run` exits 1
-with `ERR_PNPM_IGNORED_BUILDS` before the script starts.
+## What you get
+
+```
+Senior Mobile Developer — iOS first (mobile)
+995 crudo → 884 tras dedupe → 120 relevantes · 29 nuevas · 12.5s
+getonboard:136  torre:265  remoteok:246  weworkremotely:25  arbeitnow:450
+
+ 1. [93] Senior iOS Engineer — Winston Artory Group          NUEVA
+    https://torre.ai/post/VWYe9zyW
+    sin publicar · torre · hace 6 días
+    swift, objective-c, core data, xctest, rest
+
+ 2. [86] Senior iOS Engineer (LATAM/Canada) — Onfleet        NUEVA
+    https://torre.ai/post/JWO8X04w
+    USD 6,250/mes · torre · hace 15 días
+    swift, swiftui, uikit, ci/cd
+```
+
+The number in brackets is the fit score out of 100. `NUEVA` marks an offer that
+has never appeared in a previous run.
+
+## Everyday commands
+
+| Command | What it does |
+|---------|--------------|
+| `pnpm jobs roles/mobile.md` | Full ranking |
+| `pnpm jobs roles/mobile.md --new` | Only offers never seen before |
+| `pnpm jobs roles/mobile.md --max-age 7` | Published in the last 7 days |
+| `pnpm jobs roles/mobile.md --since 2026-08-19` | Published on or after a date |
+| `pnpm jobs roles/mobile.md --limit 30` | How many to print (default 20) |
+| `pnpm jobs roles/mobile.md --sources torre,getonboard` | Restrict the sources |
+| `pnpm jobs roles/mobile.md --no-report` | Skip the markdown file |
+| `pnpm test` | Run the test suite |
+
+`--max-age 7 --new` is the daily driver: published this week, and not yet seen.
 
 ## Role files
 
@@ -172,3 +202,18 @@ account restricted. That trade-off is the account owner's to make.
 
 Revelo, Turing, Arc.dev and Hired are talent marketplaces: you create a profile
 and companies approach you. There is nothing to search. Register once, manually.
+
+## Troubleshooting
+
+**`pnpm search` returns npm packages.** The script is `jobs`, not `search`:
+`pnpm search` is a pnpm built-in that queries the npm registry. It never runs a
+package script, and with `--` it silently returns registry results rather than
+failing. `pnpm run search` prints a pointer to the right command.
+
+**`ERR_PNPM_IGNORED_BUILDS` on any `pnpm run`.** `pnpm-workspace.yaml` must set
+`allowBuilds.esbuild: true`. pnpm 11 otherwise leaves a `set this to true or
+false` placeholder there, and every script exits 1 before it starts.
+
+**No results at all.** Widen the role file: check `must_have_any`, then
+`min_salary_usd`, then `location_policy`. A 2-day `max_age_days` is aggressive
+enough that Remote OK and We Work Remotely contribute nothing.
