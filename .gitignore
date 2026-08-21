@@ -10,3 +10,11 @@ reports/*.html
 # Only the sanitized template is published.
 roles/*.md
 !roles/*.example.md
+
+# Local agent tooling. Not part of the project, and it leaks local paths.
+.atl/
+.claude/
+.agents/
+.opencode/
+.cursor/
+openspec/
