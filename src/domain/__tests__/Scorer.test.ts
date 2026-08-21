@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { evaluate, rankJobs, WEIGHTS } from '@domain/Scorer'
+import { collapseSameOffers, evaluate, rankJobs, WEIGHTS } from '@domain/Scorer'
 import { NOW, aJob, daysAgo, mobileCriteria } from './fixtures'
 
 const criteria = mobileCriteria()
@@ -348,5 +348,48 @@ describe('evaluate — age is counted in whole days', () => {
 
     expect(evaluate(onTheDay, since, NIGHT).rejected).toBeNull()
     expect(evaluate(dayBefore, since, NIGHT).rejected).toBe('too-old')
+  })
+})
+
+describe('collapseSameOffers', () => {
+  const strong = aJob({
+    url: 'https://torre.ai/post/abc',
+    source: 'torre',
+    company: 'BairesDev',
+    title: 'Mobile QA Engineer - Remote Work | REF#301108',
+    description: 'Swift, SwiftUI, UIKit, Kotlin, Appium.',
+  })
+  const thin = aJob({
+    url: 'https://www.linkedin.com/jobs/view/1',
+    source: 'linkedin',
+    company: 'BairesDev',
+    title: 'Mobile QA Engineer - Remote Work | REF#301108',
+    description: '',
+  })
+
+  it('keeps one entry when the same offer arrives from two boards', () => {
+    const ranked = rankJobs([thin, strong], criteria, NOW)
+    expect(ranked).toHaveLength(2)
+    expect(collapseSameOffers(ranked)).toHaveLength(1)
+  })
+
+  it('keeps the higher-scoring copy', () => {
+    const collapsed = collapseSameOffers(rankJobs([thin, strong], criteria, NOW))
+    expect(collapsed[0]?.job.source).toBe('torre')
+  })
+
+  it('leaves unrelated offers untouched', () => {
+    const other = aJob({ url: 'https://torre.ai/post/xyz', company: 'Kraken', title: 'Staff React Native Engineer' })
+    expect(collapseSameOffers(rankJobs([strong, other], criteria, NOW))).toHaveLength(2)
+  })
+
+  it('stays sorted by score after collapsing', () => {
+    const other = aJob({ url: 'https://torre.ai/post/xyz', company: 'Kraken', title: 'Senior iOS Engineer', description: 'Swift SwiftUI UIKit Combine Core Data MVVM.' })
+    const collapsed = collapseSameOffers(rankJobs([thin, strong, other], criteria, NOW))
+    expect(collapsed[0]!.score).toBeGreaterThanOrEqual(collapsed[1]!.score)
+  })
+
+  it('returns an empty list unchanged', () => {
+    expect(collapseSameOffers([])).toEqual([])
   })
 })

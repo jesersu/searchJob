@@ -22,6 +22,12 @@ export function renderConsole(outcome: SearchOutcome, now: Date, limit: number):
     lines.push(`${DIM}filtro: publicadas ${ageFilterLabel(criteria.maxAgeDays, now)}${RESET}`)
   }
 
+  if (stats.duplicates > 0) {
+    lines.push(
+      `${DIM}${stats.duplicates} copia(s) de la misma oferta en otro portal, unificadas${RESET}`,
+    )
+  }
+
   const bySource = Object.entries(stats.perSource)
     .map(([id, count]) => `${id}:${count}`)
     .join('  ')

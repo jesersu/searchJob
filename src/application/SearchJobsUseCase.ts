@@ -1,7 +1,7 @@
 import type { Job } from '@domain/Job'
 import type { JobRepository } from '@domain/ports/JobRepository'
 import type { JobSource } from '@domain/ports/JobSource'
-import { rankJobs, type Evaluation } from '@domain/Scorer'
+import { collapseSameOffers, rankJobs, type Evaluation } from '@domain/Scorer'
 import type { SearchCriteria } from '@domain/SearchCriteria'
 
 export interface SourceFailure {
@@ -13,6 +13,8 @@ export interface SearchStats {
   readonly raw: number
   readonly deduped: number
   readonly ranked: number
+  /** Copies of an offer already present under another board's URL. */
+  readonly duplicates: number
   readonly newCount: number
   readonly perSource: Readonly<Record<string, number>>
   readonly failures: readonly SourceFailure[]
@@ -76,16 +78,21 @@ export class SearchJobsUseCase {
 
     const deduped = dedupeById(collected)
     const ranked = rankJobs(deduped, criteria, now)
+    // Same opening, two boards, two URLs. Collapsed after scoring so the copy
+    // that survives is the one with the most to say.
+    const unique = collapseSameOffers(ranked)
 
     const knownIds = await this.repository.findKnownIds(ranked.map((entry) => entry.job.id))
     const newIds = new Set(ranked.map((e) => e.job.id).filter((id) => !knownIds.has(id)))
 
+    // Every copy is stored, not just the surviving one: otherwise the URL that
+    // lost the collapse would look brand new on the next run.
     await this.repository.saveNew(
       ranked.map((entry) => entry.job),
       criteria.role,
     )
 
-    const visible = options.onlyNew ? ranked.filter((e) => newIds.has(e.job.id)) : ranked
+    const visible = options.onlyNew ? unique.filter((e) => newIds.has(e.job.id)) : unique
 
     return {
       criteria,
@@ -94,7 +101,8 @@ export class SearchJobsUseCase {
       stats: {
         raw: collected.length,
         deduped: deduped.length,
-        ranked: ranked.length,
+        ranked: unique.length,
+        duplicates: ranked.length - unique.length,
         newCount: newIds.size,
         perSource,
         failures,
