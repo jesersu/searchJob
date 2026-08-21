@@ -18,6 +18,7 @@ zones: [latam]
 country: Peru
 location_policy: balanced
 min_salary_usd: 4000
+salary_target_usd: 9000
 salary_unknown_policy: keep
 ---
 
@@ -115,5 +116,22 @@ describe('parseRoleFile', () => {
     expect(() =>
       parseRoleFile('---\nrole: x\nqueries: [ios]\nlocation_policy: aggressive\n---\n'),
     ).toThrow(/location_policy/)
+  })
+
+  it('parses the salary target separately from the floor', () => {
+    const { criteria } = parseRoleFile(VALID)
+    expect(criteria.minSalaryUsd).toBe(4000)
+    expect(criteria.salaryTargetUsd).toBe(9000)
+  })
+
+  it('defaults the salary target to null so the scorer derives one', () => {
+    const { criteria } = parseRoleFile('---\nrole: x\nqueries: [ios]\n---\n')
+    expect(criteria.salaryTargetUsd).toBeNull()
+  })
+
+  it('rejects a target at or below the floor', () => {
+    expect(() =>
+      parseRoleFile('---\nrole: x\nqueries: [ios]\nmin_salary_usd: 4000\nsalary_target_usd: 4000\n---\n'),
+    ).toThrow(/greater than/)
   })
 })

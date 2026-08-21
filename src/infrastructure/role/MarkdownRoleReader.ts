@@ -104,6 +104,12 @@ export function parseRoleFile(content: string): { criteria: SearchCriteria; cont
   const salaryPolicy = readKeepDrop(front['salary_unknown_policy'], 'salary_unknown_policy', 'keep')
   const datePolicy = readKeepDrop(front['unknown_date_policy'], 'unknown_date_policy', 'keep')
 
+  const minSalaryUsd = readNumber(front['min_salary_usd'], 'min_salary_usd')
+  const salaryTargetUsd = readNumber(front['salary_target_usd'], 'salary_target_usd')
+  if (minSalaryUsd !== null && salaryTargetUsd !== null && salaryTargetUsd <= minSalaryUsd) {
+    throw new RoleFileError('"salary_target_usd" must be greater than "min_salary_usd"')
+  }
+
   const criteria: SearchCriteria = {
     role,
     label: String(front['label'] ?? role),
@@ -117,7 +123,8 @@ export function parseRoleFile(content: string): { criteria: SearchCriteria; cont
     zones: lowerList(front['zones'], 'zones'),
     country: country !== null && country.length > 0 ? country : null,
     locationPolicy: locationPolicy as LocationPolicy,
-    minSalaryUsd: readNumber(front['min_salary_usd'], 'min_salary_usd'),
+    minSalaryUsd,
+    salaryTargetUsd,
     salaryUnknownPolicy: salaryPolicy as SalaryUnknownPolicy,
     maxAgeDays: readPositiveNumber(front['max_age_days'], 'max_age_days'),
     unknownDatePolicy: datePolicy as UnknownDatePolicy,

@@ -80,6 +80,9 @@ timezone: "America/Lima (UTC-5)"
 
 # Your own floor, in USD per month. This is the one value nothing can infer.
 min_salary_usd: 3000
+# Score ceiling. At or above this, salary earns full credit. Kept separate from
+# the floor so widening coverage does not flatten the top of the ranking.
+salary_target_usd: 9000
 salary_period: monthly
 salary_unknown_policy: keep   # keep | drop -> most boards publish no salary
 

@@ -103,6 +103,29 @@ than a fabricated zero.
 source 87 of 103 slots purely because it exposes numbers, burying strong roles
 that publish none.
 
+**The salary floor and the salary target are separate numbers.** `min_salary_usd`
+is the filter threshold; `salary_target_usd` is where the score saturates.
+Deriving the second from the first meant that lowering the floor to widen
+coverage also flattened the top of the ranking: with a floor of 1000 everything
+above 4000 scored identically. One value, one meaning.
+
+## Two stages, not one
+
+Filtering and scoring are separate passes and must not be confused.
+
+**Stage 1 — filter.** Binary. An offer passes or is discarded, and a discarded
+offer never reaches the ranking. Reasons: `excluded-title`, `off-target`,
+`excluded-stack`, `not-remote`, `too-old`, `date-unknown`, `location-mismatch`,
+`salary-unknown`, `below-salary-floor`.
+
+**Stage 2 — score.** Only for survivors, and it decides order, never inclusion.
+Five weighted factors summing to 100: stack 42, seniority 18, location 15,
+salary 13, recency 12.
+
+Salary carries 13 points on purpose. Most boards publish none, so weighting it
+heavily hands the ranking to whichever source exposes numbers. An unknown
+salary scores 7.15 out of 13 — neither rewarded nor punished.
+
 **Age filtering is separate from history.** `--new` means "I have not seen
 this offer before"; `max_age_days` means "this offer was published recently".
 They answer different questions and compose.

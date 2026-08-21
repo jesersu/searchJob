@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { evaluate, rankJobs } from '@domain/Scorer'
+import { evaluate, rankJobs, WEIGHTS } from '@domain/Scorer'
 import { NOW, aJob, daysAgo, mobileCriteria } from './fixtures'
 
 const criteria = mobileCriteria()
@@ -270,5 +270,51 @@ describe('evaluate — location filter', () => {
   it('gives an unreachable posting no location credit under the off policy', () => {
     const off = mobileCriteria({ locationPolicy: 'off' })
     expect(evaluate(aJob({ location: 'Chennai' }), off, NOW).breakdown.location).toBe(0)
+  })
+})
+
+describe('evaluate — salary floor and salary target are separate concerns', () => {
+  // min_salary_usd is the filter threshold; salary_target_usd is where the
+  // score saturates. One number doing both jobs meant that lowering the floor
+  // to widen coverage silently flattened the ranking.
+  const tiered = mobileCriteria({ minSalaryUsd: 1000, salaryTargetUsd: 8000 })
+
+  it('awards full salary credit at the target', () => {
+    const atTarget = evaluate(aJob({ salaryUsdPerMonth: 8000 }), tiered, NOW)
+    expect(atTarget.breakdown.salary).toBe(WEIGHTS.salary)
+  })
+
+  it('awards full salary credit above the target', () => {
+    const above = evaluate(aJob({ salaryUsdPerMonth: 20_000 }), tiered, NOW)
+    expect(above.breakdown.salary).toBe(WEIGHTS.salary)
+  })
+
+  it('still discriminates between offers under the target', () => {
+    const mid = evaluate(aJob({ salaryUsdPerMonth: 4_000 }), tiered, NOW)
+    const high = evaluate(aJob({ salaryUsdPerMonth: 7_000 }), tiered, NOW)
+    expect(high.breakdown.salary).toBeGreaterThan(mid.breakdown.salary)
+  })
+
+  it('keeps an unknown salary between the floor and the target', () => {
+    const floor = evaluate(aJob({ salaryUsdPerMonth: 1_000 }), tiered, NOW)
+    const unknown = evaluate(aJob({ salaryUsdPerMonth: null }), tiered, NOW)
+    const target = evaluate(aJob({ salaryUsdPerMonth: 8_000 }), tiered, NOW)
+    expect(unknown.breakdown.salary).toBeGreaterThan(floor.breakdown.salary)
+    expect(unknown.breakdown.salary).toBeLessThan(target.breakdown.salary)
+  })
+
+  it('lowering the floor no longer flattens the top of the curve', () => {
+    const lowFloor = mobileCriteria({ minSalaryUsd: 1000, salaryTargetUsd: 8000 })
+    const four = evaluate(aJob({ salaryUsdPerMonth: 4_000 }), lowFloor, NOW)
+    const fifteen = evaluate(aJob({ salaryUsdPerMonth: 15_000 }), lowFloor, NOW)
+    expect(fifteen.breakdown.salary).toBeGreaterThan(four.breakdown.salary)
+  })
+
+  it('falls back to a multiple of the floor when no target is set', () => {
+    const noTarget = mobileCriteria({ minSalaryUsd: 4000, salaryTargetUsd: null })
+    const atFloor = evaluate(aJob({ salaryUsdPerMonth: 4_000 }), noTarget, NOW)
+    const atCap = evaluate(aJob({ salaryUsdPerMonth: 16_000 }), noTarget, NOW)
+    expect(atFloor.breakdown.salary).toBeLessThan(atCap.breakdown.salary)
+    expect(atCap.breakdown.salary).toBe(WEIGHTS.salary)
   })
 })

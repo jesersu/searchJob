@@ -39,7 +39,10 @@ export interface SearchCriteria {
   /** Where the candidate lives. Always an allowed location. */
   readonly country: string | null
   readonly locationPolicy: LocationPolicy
+  /** Filter threshold: offers paying less are discarded. */
   readonly minSalaryUsd: number | null
+  /** Score ceiling: at or above this, salary earns full credit. */
+  readonly salaryTargetUsd: number | null
   readonly salaryUnknownPolicy: SalaryUnknownPolicy
   /** Maximum age in days. null disables the filter entirely. */
   readonly maxAgeDays: number | null

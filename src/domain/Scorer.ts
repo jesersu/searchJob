@@ -37,7 +37,7 @@ export interface Evaluation {
  * publish it, and ranking by salary alone hands the entire result set to
  * whichever source happens to expose numbers.
  */
-const WEIGHTS = {
+export const WEIGHTS = {
   stack: 42,
   seniority: 18,
   location: 15,
@@ -59,7 +59,8 @@ const STACK_SATURATION = 12
 /** An unpublished salary is unknown, not bad. It sits above the floor. */
 const UNKNOWN_SALARY_FRACTION = 0.55
 const AT_FLOOR_SALARY_FRACTION = 0.25
-const SALARY_FRACTION_PER_MULTIPLE = 0.25
+/** Where the curve saturates when the role file sets no explicit target. */
+const SALARY_TARGET_MULTIPLE = 4
 
 const RECENCY_HORIZON_DAYS = 60
 const UNKNOWN_RECENCY_FRACTION = 0.5
@@ -107,14 +108,28 @@ function seniorityFraction(text: string, criteria: SearchCriteria): number {
   return stated.some((level) => wanted.has(level)) ? 1 : 0
 }
 
+/**
+ * Two distinct numbers, on purpose.
+ *
+ * `minSalaryUsd` is the filter threshold: below it, the offer is discarded.
+ * `salaryTargetUsd` is where the score saturates. Deriving the second from the
+ * first means widening coverage by lowering the floor also flattens the top of
+ * the ranking, which is a change nobody asked for.
+ */
 function salaryFraction(job: Job, criteria: SearchCriteria): number {
   if (job.salaryUsdPerMonth === null) return UNKNOWN_SALARY_FRACTION
-  if (criteria.minSalaryUsd === null || criteria.minSalaryUsd <= 0) return UNKNOWN_SALARY_FRACTION
 
-  const multiple = job.salaryUsdPerMonth / criteria.minSalaryUsd
-  const fraction =
-    AT_FLOOR_SALARY_FRACTION + SALARY_FRACTION_PER_MULTIPLE * (multiple - 1)
-  return clamp(fraction, 0, 1)
+  const floor = criteria.minSalaryUsd
+  if (floor === null || floor <= 0) return UNKNOWN_SALARY_FRACTION
+
+  const target = criteria.salaryTargetUsd ?? floor * SALARY_TARGET_MULTIPLE
+  if (target <= floor) {
+    return job.salaryUsdPerMonth >= target ? 1 : AT_FLOOR_SALARY_FRACTION
+  }
+
+  const progress = (job.salaryUsdPerMonth - floor) / (target - floor)
+  const headroom = 1 - AT_FLOOR_SALARY_FRACTION
+  return clamp(AT_FLOOR_SALARY_FRACTION + headroom * progress, 0, 1)
 }
 
 function recencyFraction(job: Job, now: Date): number {

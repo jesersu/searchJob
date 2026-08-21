@@ -44,6 +44,7 @@ export function mobileCriteria(overrides: Partial<SearchCriteria> = {}): SearchC
     country: 'peru',
     locationPolicy: 'balanced',
     minSalaryUsd: 4000,
+    salaryTargetUsd: null,
     salaryUnknownPolicy: 'keep',
     maxAgeDays: null,
     unknownDatePolicy: 'keep',
