@@ -8,7 +8,9 @@ export function daysAgo(days: number): Date {
 }
 
 export function aJob(overrides: Partial<Job> = {}): Job {
-  return {
+  // Real ids are derived from the canonical URL, so distinct URLs must produce
+  // distinct ids or identity tests pass for the wrong reason.
+  const base: Job = {
     id: 'job-1',
     source: 'test',
     title: 'iOS Engineer',
@@ -23,6 +25,7 @@ export function aJob(overrides: Partial<Job> = {}): Job {
     publishedAt: daysAgo(2),
     ...overrides,
   }
+  return overrides.id === undefined ? { ...base, id: base.url } : base
 }
 
 export function mobileCriteria(overrides: Partial<SearchCriteria> = {}): SearchCriteria {

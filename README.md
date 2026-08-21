@@ -198,6 +198,18 @@ Handyperson, a Valet and a Surveyor as mobile work, and 180 of its 186
 therefore publishes no tags. Cleaning data at the boundary keeps the domain
 free of per-source special cases.
 
+**Deduplication happens twice, for two different reasons.** By canonical URL
+first, which catches the same link arriving from several queries. Then by
+content identity after scoring, which catches the same opening published on
+several boards: one BairesDev role reached the ranking through both Torre and
+LinkedIn under two URLs and two scores. The second pass keeps the
+highest-scoring copy, and every copy is still written to history so the losing
+URL does not resurface as new tomorrow.
+
+Content identity is company plus requisition code, or company plus normalized
+title when no code is present. An unnamed company falls back to URL identity:
+an anonymous posting is not evidence of sameness.
+
 **History is the point.** Without `data/jobs.db`, every run shows the same
 offers and the tool gets abandoned in a week.
 

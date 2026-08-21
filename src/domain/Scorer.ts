@@ -1,5 +1,6 @@
 import type { Job } from './Job.js'
 import { gateText, searchableText } from './Job.js'
+import { contentKey } from './Identity.js'
 import { assessEligibility, type Eligibility } from './Location.js'
 import type { SearchCriteria, Seniority } from './SearchCriteria.js'
 import { containsAnyTerm, containsTerm, matchedTerms } from './TermMatcher.js'
@@ -254,4 +255,20 @@ export function evaluateAll(
   now: Date,
 ): Evaluation[] {
   return jobs.map((job) => evaluate(job, criteria, now))
+}
+
+/**
+ * Collapses offers that are the same opening published on several boards,
+ * keeping the highest-scoring copy. Runs after scoring on purpose: "the best
+ * copy" only means something once every copy has a score.
+ */
+export function collapseSameOffers(evaluations: readonly Evaluation[]): Evaluation[] {
+  const best = new Map<string, Evaluation>()
+
+  for (const evaluation of evaluations) {
+    const key = contentKey(evaluation.job)
+    const current = best.get(key)
+    if (current === undefined || evaluation.score > current.score) best.set(key, evaluation)
+  }
+  return [...best.values()].sort((a, b) => b.score - a.score)
 }
