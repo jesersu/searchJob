@@ -17,6 +17,7 @@ const ENDPOINT = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPosting
 
 /** LinkedIn's workplace-type filter: 2 is "remote". */
 const REMOTE_FILTER = '2'
+export const SECONDS_PER_DAY = 86_400
 const PAUSE_MS = 900
 
 const CARD_PATTERN = /<li>([\s\S]*?)<\/li>/g
@@ -66,11 +67,24 @@ export function parseGuestCards(html: string, remote: boolean): Job[] {
   return jobs
 }
 
-function buildUrl(query: string, criteria: SearchCriteria): string {
+/**
+ * Exported and pure for testing: the query-string contract is what matters,
+ * not the network call around it.
+ */
+export function buildSearchUrl(query: string, criteria: SearchCriteria): string {
   const params = new URLSearchParams({ keywords: query, start: '0' })
 
   if (criteria.country !== null) params.set('location', criteria.country)
   if (criteria.remote === 'required') params.set('f_WT', REMOTE_FILTER)
+
+  // f_TPR = "Time Posted Range". LinkedIn does the filtering, so this source
+  // stops fetching offers the domain would discard anyway. Rounded up: --since
+  // yields a fractional day budget, and flooring it here would ask LinkedIn
+  // for a narrower window than the domain filter actually allows.
+  if (criteria.maxAgeDays !== null) {
+    const seconds = Math.ceil(criteria.maxAgeDays) * SECONDS_PER_DAY
+    params.set('f_TPR', `r${seconds}`)
+  }
 
   return `${ENDPOINT}?${params.toString()}`
 }
@@ -89,7 +103,7 @@ export class LinkedInGuestSource implements JobSource {
 
     for (const query of allQueries(criteria)) {
       try {
-        const html = await fetchText(buildUrl(query, criteria), {
+        const html = await fetchText(buildSearchUrl(query, criteria), {
           accept: 'text/html,application/xhtml+xml',
         })
         jobs.push(...parseGuestCards(html, criteria.remote === 'required'))

@@ -112,6 +112,16 @@ Adding a board is one file in `sources/` and one line in `sources/registry.ts`.
 | We Work Remotely | RSS, fixed category | no | no |
 | Arbeitnow | REST API, paginated | no | no |
 
+**LinkedIn's date filter runs server-side.** When `max_age_days` is set,
+`LinkedInGuestSource` sends `f_TPR=r{seconds}` — LinkedIn's own "Time Posted
+Range" parameter, the one its guest search page uses. The domain's own
+`too-old` filter still runs afterwards as the source of truth, since `f_TPR`'s
+exact boundary is undocumented, but verified live: zero LinkedIn offers were
+rejected as stale after fetching, where previously the source could return
+postings three weeks old that were discarded one by one after being fetched and
+parsed. `--since`'s fractional day budget is rounded up, never down, so the
+window requested from LinkedIn is never narrower than what the domain allows.
+
 **LinkedIn needs no login.** Its public guest endpoint
 (`/jobs-guest/jobs/api/seeMoreJobPostings/search`) is what serves LinkedIn's own
 logged-out search pages. No account, no session, no browser automation, and so
