@@ -318,3 +318,35 @@ describe('evaluate — salary floor and salary target are separate concerns', ()
     expect(atCap.breakdown.salary).toBe(WEIGHTS.salary)
   })
 })
+
+describe('evaluate — age is counted in whole days', () => {
+  // Sources publish a date, not a timestamp: LinkedIn's <time datetime="..."">
+  // parses to midnight. At 19:06 a job posted during 18 Aug measures 3.8 days
+  // old, so a raw fractional comparison rejected offers the very same report
+  // was labelling "hace 3 días". Display and filter must agree.
+  const threeDays = mobileCriteria({ maxAgeDays: 3 })
+  const NIGHT = new Date('2026-08-21T19:06:00Z')
+
+  it('keeps an offer dated three calendar days ago, late in the day', () => {
+    const job = aJob({ publishedAt: new Date('2026-08-18T00:00:00Z') })
+    expect(evaluate(job, threeDays, NIGHT).rejected).toBeNull()
+  })
+
+  it('rejects an offer dated four calendar days ago', () => {
+    const job = aJob({ publishedAt: new Date('2026-08-17T00:00:00Z') })
+    expect(evaluate(job, threeDays, NIGHT).rejected).toBe('too-old')
+  })
+
+  // --since produces a fractional budget on purpose: it means "on or after
+  // this date", so the day named must survive and the day before must not.
+  it('honours --since semantics with a fractional budget', () => {
+    const since = mobileCriteria({
+      maxAgeDays: (NIGHT.getTime() - new Date('2026-08-19T00:00:00Z').getTime()) / 86_400_000,
+    })
+    const onTheDay = aJob({ publishedAt: new Date('2026-08-19T00:00:00Z') })
+    const dayBefore = aJob({ publishedAt: new Date('2026-08-18T00:00:00Z') })
+
+    expect(evaluate(onTheDay, since, NIGHT).rejected).toBeNull()
+    expect(evaluate(dayBefore, since, NIGHT).rejected).toBe('too-old')
+  })
+})
