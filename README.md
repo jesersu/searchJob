@@ -73,6 +73,10 @@ term is fanned out across every source and the results are deduplicated.
 
 ## Architecture
 
+For the full picture with diagrams — the run pipeline, the hexagonal layers, the
+two-stage filter and score, and the failures each domain module came from — see
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ```
 src/
   domain/          zero dependencies — no fetch, no fs, no clock of its own
