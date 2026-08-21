@@ -1,0 +1,12 @@
+node_modules/
+.sessions/
+data/*.db
+reports/*.md
+reports/*.html
+.env
+.DS_Store
+
+# Role files hold a personal salary floor and negotiating position.
+# Only the sanitized template is published.
+roles/*.md
+!roles/*.example.md

@@ -1,0 +1,6 @@
+# esbuild ships a prebuilt binary fetched by its install script.
+# Without this, pnpm blocks the build and every `pnpm run` exits 1.
+allowBuilds:
+  esbuild: true
+onlyBuiltDependencies:
+  - esbuild
