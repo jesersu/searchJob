@@ -78,6 +78,10 @@ zones: [latam, americas, global]
 # India, Europe). strict = also drop postings that name no place at all.
 # off = no filtering, location becomes a scoring signal only.
 location_policy: balanced
+# Cuando esta en true, una oferta acotada a paises concretos tiene que nombrar
+# el tuyo. Las regiones ("latam", "worldwide") siguen valiendo, porque una
+# region incluye tu pais por definicion. Es independiente de location_policy.
+require_country: false
 timezone: "America/Lima (UTC-5)"
 
 # Your own floor, in USD per month. This is the one value nothing can infer.

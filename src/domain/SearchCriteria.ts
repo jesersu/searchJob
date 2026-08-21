@@ -39,6 +39,13 @@ export interface SearchCriteria {
   /** Where the candidate lives. Always an allowed location. */
   readonly country: string | null
   readonly locationPolicy: LocationPolicy
+  /**
+   * When true, a posting scoped to specific countries must name the
+   * candidate's own. Regions such as "latam" still qualify, because a region
+   * covers that country by definition. Orthogonal to locationPolicy, which
+   * only decides what happens to postings that name no place at all.
+   */
+  readonly requireCountry: boolean
   /** Filter threshold: offers paying less are discarded. */
   readonly minSalaryUsd: number | null
   /** Score ceiling: at or above this, salary earns full credit. */

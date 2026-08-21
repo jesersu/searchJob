@@ -43,6 +43,7 @@ export function mobileCriteria(overrides: Partial<SearchCriteria> = {}): SearchC
     zones: ['latam', 'americas', 'global'],
     country: 'peru',
     locationPolicy: 'balanced',
+    requireCountry: false,
     minSalaryUsd: 4000,
     salaryTargetUsd: null,
     salaryUnknownPolicy: 'keep',

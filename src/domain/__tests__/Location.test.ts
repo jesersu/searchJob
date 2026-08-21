@@ -98,3 +98,49 @@ describe('assessEligibility — where the allowed signal appears matters', () =>
     expect(assessEligibility(job, criteria)).toBe('match')
   })
 })
+
+describe('assessEligibility — requireCountry', () => {
+  const strictCountry = mobileCriteria({
+    country: 'peru',
+    zones: ['latam', 'americas', 'global'],
+    requireCountry: true,
+  })
+
+  it('rejects a posting scoped to another country inside an allowed zone', () => {
+    expect(assessEligibility(aJob({ location: 'Colombia' }), strictCountry)).toBe('conflict')
+    expect(assessEligibility(aJob({ location: 'Argentina' }), strictCountry)).toBe('conflict')
+    expect(assessEligibility(aJob({ location: 'United States' }), strictCountry)).toBe('conflict')
+  })
+
+  it('accepts the candidate own country', () => {
+    expect(assessEligibility(aJob({ location: 'Peru' }), strictCountry)).toBe('match')
+    expect(assessEligibility(aJob({ location: 'Lima, Peru' }), strictCountry)).toBe('match')
+  })
+
+  // A region covers Peru by definition, so it stays eligible.
+  it('accepts a posting scoped to a region rather than a country list', () => {
+    expect(assessEligibility(aJob({ title: 'iOS Engineer (LATAM)' }), strictCountry)).toBe('match')
+    expect(assessEligibility(aJob({ location: 'Latin America' }), strictCountry)).toBe('match')
+    expect(assessEligibility(aJob({ location: 'Anywhere' }), strictCountry)).toBe('match')
+  })
+
+  it('accepts a country list that names Peru among others', () => {
+    const job = aJob({ title: 'iOS Engineer (Colombia, Peru, Mexico)' })
+    expect(assessEligibility(job, strictCountry)).toBe('match')
+  })
+
+  it('leaves a posting that names no place as unknown', () => {
+    const job = aJob({ title: 'Senior iOS Engineer', location: null, description: 'Swift.' })
+    expect(assessEligibility(job, strictCountry)).toBe('unknown')
+  })
+
+  it('does not change behaviour when disabled', () => {
+    const relaxed = mobileCriteria({ country: 'peru', zones: ['latam'], requireCountry: false })
+    expect(assessEligibility(aJob({ location: 'Colombia' }), relaxed)).toBe('match')
+  })
+
+  it('needs a country to be configured at all', () => {
+    const noCountry = mobileCriteria({ country: null, zones: ['latam'], requireCountry: true })
+    expect(assessEligibility(aJob({ location: 'Colombia' }), noCountry)).toBe('match')
+  })
+})

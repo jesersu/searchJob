@@ -123,6 +123,7 @@ export function parseRoleFile(content: string): { criteria: SearchCriteria; cont
     zones: lowerList(front['zones'], 'zones'),
     country: country !== null && country.length > 0 ? country : null,
     locationPolicy: locationPolicy as LocationPolicy,
+    requireCountry: front['require_country'] === true,
     minSalaryUsd,
     salaryTargetUsd,
     salaryUnknownPolicy: salaryPolicy as SalaryUnknownPolicy,
