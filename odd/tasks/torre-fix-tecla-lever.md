@@ -43,11 +43,12 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
   - Verify pagination/query params and the public job URL first. Map to `Job`. Register. Fixture + tests.
   - Checks: same as T1, expecting `tecla:<n>`.
   - Evidence: commit 6f69f12. Verified by curl: `?page=N` paginates (9 jobs/page, 43 jobs, 5 pages, page 6 returns an empty list); `search`, `name`, `limit`, `page_size`, `pageSize` are ignored. Public job URL is `https://app.tecla.io/job?id=<id>` (route `/job/` and the listing's own link in the bundle); the SPA answers 200 for any path, so this is bundle-verified, not status-verified. RED: `Cannot find module '@infra/sources/TeclaSource'`; one GREEN-phase failure (timestamp zone) fixed. GREEN: `pnpm test` 11 files / 159 tests (also under TZ=Asia/Tokyo); `pnpm typecheck` clean; live run printed `tecla:43` and no tecla failure line. Job is built without `buildJob` because `canonicalUrl` strips `?id=` and would merge all jobs into one.
-- [ ] T3 — Torre repair (route: delegated; trigger: reading that prepares a write)
+- [x] T3 — Torre repair (route: delegated; trigger: reading that prepares a write)
   - Find the current opportunities search contract (torre.ai web bundle / network calls / public docs). Fix `TorreSource` and the stale `SIZE` comment if needed. Add a fixture + test for the request shape and the mapping.
   - If no public unauthenticated contract works: STOP, change nothing in `TorreSource`, and return the gap with evidence. Removing or disabling the source is a user decision.
   - Checks: same as T1, expecting `torre:<n>` > 0 and no `torre falló` line.
   - BLOCKED (decision needed, no code changed): the 400 is a User-Agent gate. Torre's web bundle sends `User-Agent: Torre-heda` on `POST /opportunities/_search?size=N&aggregate=...`. With exactly that UA the current body returns 200 (also for size 20, 25 and 50, so the `SIZE` comment is stale); with a Chrome UA, `curl/8.7.1`, `searchJob/1.0`, `node`, `Mozilla/5.0` or no UA it returns 400. Fixing it means presenting Torre's first-party client identity to pass that gate; left for the user.
+  - Evidence: commit `5527f4b`. User decision (2026-10-09): send `User-Agent: Torre-heda` after the official keyed API (`torre.ai/v1/openapi.json`) was found to have no job search, only `GET /v1/jobs/{jobId}`. RED observed: `expected 'Mozilla/5.0 …' to be 'Torre-heda'`. `pnpm test` 163 passed (12 files); `pnpm typecheck` clean; live run `torre:290`, no failure line. Touched `src/infrastructure/http.ts` (optional `userAgent` override), outside the original writer surface, done inline by the parent. Risk: undocumented allowlist, may break without notice.
 
 ## Acceptance criteria
 
@@ -68,4 +69,4 @@ Strategy: `ask-on-risk`. Forecast: ~400 authored lines (Lever ~150, Tecla ~170, 
 
 ## Next step
 
-T3 needs a user decision: send `User-Agent: Torre-heda`, or leave/replace/remove the Torre source.
+All three tasks are done. Push and pull request against `develop` are the user\'s decision.
