@@ -2,7 +2,7 @@ import type { Job } from '@domain/Job'
 import type { JobSource, SourceCapabilities } from '@domain/ports/JobSource'
 import type { SearchCriteria } from '@domain/SearchCriteria'
 import { fetchJson } from '../http.js'
-import { buildJob } from './support.js'
+import { buildJob, errorMessage, warnPartial } from './support.js'
 
 const ENDPOINT = 'https://api.lever.co/v0/postings'
 const DEFAULT_BOARDS = ['coderio'] as const
@@ -52,12 +52,27 @@ function salaryOf(range: LeverPosting['salaryRange']): {
   return { usdPerMonth: null, raw }
 }
 
+/**
+ * Lever repeats the same text in `descriptionPlain` and `descriptionBodyPlain`
+ * (15 of 15 live postings were identical). Join the parts, dropping any part
+ * already contained in another one.
+ */
+function descriptionOf(posting: LeverPosting): string {
+  const parts = [posting.descriptionPlain, posting.descriptionBodyPlain, posting.additionalPlain].filter(
+    (part): part is string => Boolean(part),
+  )
+  return parts
+    .filter((part, i) => !parts.some((other, j) => j !== i && other.includes(part) && (other !== part || j < i)))
+    .join('\n')
+}
+
 /** Pure mapping from Lever's postings array, so it is testable without the network. */
 export function mapLeverPostings(payload: unknown, board: string): Job[] {
   if (!Array.isArray(payload)) return []
 
   const jobs: Job[] = []
-  for (const posting of payload as LeverPosting[]) {
+  for (const posting of payload as (LeverPosting | null)[]) {
+    if (!posting || typeof posting !== 'object') continue
     if (!posting.text || !posting.hostedUrl) continue
 
     const salary = salaryOf(posting.salaryRange)
@@ -68,9 +83,7 @@ export function mapLeverPostings(payload: unknown, board: string): Job[] {
         title: posting.text,
         company: board,
         url: posting.hostedUrl,
-        description: [posting.descriptionPlain, posting.descriptionBodyPlain, posting.additionalPlain]
-          .filter(Boolean)
-          .join('\n'),
+        description: descriptionOf(posting),
         tags: [categories.team, categories.department, categories.commitment].filter(
           (tag): tag is string => Boolean(tag),
         ),
@@ -88,8 +101,9 @@ export function mapLeverPostings(payload: unknown, board: string): Job[] {
 
 /**
  * Lever public postings API: one board per company slug, no key, no query
- * parameter. The domain does all the filtering. A broken board is skipped as
- * long as at least one other board answers; if all fail, the error surfaces.
+ * parameter. The domain does all the filtering. A broken board is skipped (and
+ * reported) as long as at least one other board answers; if all fail, the
+ * error surfaces.
  */
 export class LeverSource implements JobSource {
   readonly id = 'lever'
@@ -112,6 +126,15 @@ export class LeverSource implements JobSource {
 
     const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
     if (failures.length === results.length && failures[0]) throw failures[0].reason
+
+    if (failures.length > 0) {
+      const detail = results
+        .flatMap((r, i) =>
+          r.status === 'rejected' ? [`${this.boards[i]} (${errorMessage(r.reason)})`] : [],
+        )
+        .join(', ')
+      warnPartial(this.id, `tableros omitidos: ${detail}`)
+    }
 
     return results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []))
   }

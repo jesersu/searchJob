@@ -2,7 +2,7 @@ import type { Job } from '@domain/Job'
 import type { JobSource, SourceCapabilities } from '@domain/ports/JobSource'
 import type { SearchCriteria } from '@domain/SearchCriteria'
 import { delay, fetchJson } from '../http.js'
-import { jobId, stripHtml, toDate } from './support.js'
+import { errorMessage, jobId, stripHtml, toDate, warnPartial } from './support.js'
 
 const ENDPOINT = 'https://api.tecla.io/api/jobs/getPublicJobs/'
 /** The public page for one job, as linked from Tecla's own listing: /job?id=<id>. */
@@ -65,7 +65,8 @@ export function mapTeclaJobs(entries: unknown): Job[] {
   if (!Array.isArray(entries)) return []
 
   const jobs: Job[] = []
-  for (const entry of entries as TeclaJob[]) {
+  for (const entry of entries as (TeclaJob | null)[]) {
+    if (!entry || typeof entry !== 'object') continue
     if (typeof entry.id !== 'number' || !entry.name) continue
 
     const salary = salaryOf(entry)
@@ -114,12 +115,25 @@ export class TeclaSource implements JobSource {
     const jobs: Job[] = []
 
     for (let page = 1; page <= MAX_PAGES; page += 1) {
-      const payload = await fetchJson<TeclaPage>(`${ENDPOINT}?page=${page}`)
+      let payload: TeclaPage
+      try {
+        payload = await fetchJson<TeclaPage>(`${ENDPOINT}?page=${page}`)
+      } catch (error) {
+        // Nothing read yet means the source is down: let the use case report it.
+        if (page === 1) throw error
+        warnPartial(this.id, `página ${page} sin leer (${errorMessage(error)}); se conservan ${jobs.length} ofertas`)
+        return jobs
+      }
       const entries = payload.data?.jobs ?? []
       if (entries.length === 0) break
 
       jobs.push(...mapTeclaJobs(entries))
-      if (page >= (payload.data?.pagination?.countPages ?? page)) break
+      const countPages = payload.data?.pagination?.countPages ?? page
+      if (page >= countPages) break
+      if (page === MAX_PAGES) {
+        warnPartial(this.id, `se leyeron ${MAX_PAGES} de ${countPages} páginas; faltan ofertas`)
+        break
+      }
       await delay(PAUSE_MS)
     }
     return jobs
