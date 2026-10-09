@@ -38,7 +38,7 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
   - Map Lever postings to `Job`; `publishedAt` from `createdAt`; salary only when `salaryRange.min > 0`; remote from `workplaceType`; location from `categories.location`/`country`.
   - Register in `registry.ts`. Fixture + tests.
   - Checks: `pnpm test`, `pnpm typecheck`, live `pnpm jobs roles/mobile-latam.md` shows `lever:<n>` with no failure line.
-  - Evidence: commit HASH_T1. RED: suite failed with `Cannot find module '@infra/sources/LeverSource'`. GREEN: `pnpm test` 10 files / 146 tests passed; `pnpm typecheck` clean; live run printed `lever:15` and no lever failure line (torre 400 expected until T3). Salary uses a plausibility floor of 100 because Lever publishes placeholder `min: 1` ranges; one failing board is skipped unless all fail.
+  - Evidence: commit 59af7cc. RED: suite failed with `Cannot find module '@infra/sources/LeverSource'`. GREEN: `pnpm test` 10 files / 146 tests passed; `pnpm typecheck` clean; live run printed `lever:15` and no lever failure line (torre 400 expected until T3). Salary uses a plausibility floor of 100 because Lever publishes placeholder `min: 1` ranges; one failing board is skipped unless all fail.
 - [ ] T2 — TeclaSource (route: delegated; trigger: 2+ non-trivial files)
   - Verify pagination/query params and the public job URL first. Map to `Job`. Register. Fixture + tests.
   - Checks: same as T1, expecting `tecla:<n>`.
