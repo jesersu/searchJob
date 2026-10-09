@@ -4,6 +4,7 @@ import { GetOnBoardSource } from './GetOnBoardSource.js'
 import { LeverSource } from './LeverSource.js'
 import { LinkedInGuestSource } from './LinkedInGuestSource.js'
 import { RemoteOkSource } from './RemoteOkSource.js'
+import { TeclaSource } from './TeclaSource.js'
 import { TorreSource } from './TorreSource.js'
 import { WeWorkRemotelySource } from './WeWorkRemotelySource.js'
 
@@ -22,6 +23,7 @@ export function defaultSources(): JobSource[] {
     new WeWorkRemotelySource(),
     new ArbeitnowSource(),
     new LeverSource(),
+    new TeclaSource(),
   ]
 }
 

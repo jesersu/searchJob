@@ -1,0 +1,185 @@
+{
+  "success": true,
+  "data": {
+    "jobs": [
+      {
+        "id": 3332,
+        "name": "Data Engineer",
+        "commitment": {
+          "name": "Full-Time"
+        },
+        "seniority": "ml",
+        "seniorityName": "Data Engineer",
+        "company": {
+          "name": "Fabletics",
+          "country": "United States of America"
+        },
+        "category": "Engineering",
+        "requiredSkills": [
+          {
+            "id": 4,
+            "minLevel": 1,
+            "level": 5,
+            "skill": {
+              "id": 6,
+              "name": "SQL"
+            }
+          },
+          {
+            "id": 9,
+            "minLevel": 1,
+            "level": 5,
+            "skill": {
+              "id": 3,
+              "name": "Python"
+            }
+          },
+          {
+            "id": 7097,
+            "minLevel": 1,
+            "level": 5,
+            "skill": {
+              "id": 946,
+              "name": "Snowflake"
+            }
+          }
+        ],
+        "createdAt": "2026-07-10T19:58:43.608733",
+        "description": "Along with our partner, we are seeking a Senior Data Engineer who will design and optimize scalable data pipelines and models that power the business insights driving their growth. You will leverage c",
+        "city": "",
+        "state": "",
+        "minSalary": 3000,
+        "maxSalary": 3500,
+        "salaryType": "montly",
+        "annualSalary": 0,
+        "annualMaxSalary": 0,
+        "usaOnly": false,
+        "subtitle": "",
+        "salaryBasedOnExperience": false,
+        "includeMaxSalary": true,
+        "fixedSalary": false
+      },
+      {
+        "id": 3389,
+        "name": "Data Engineer",
+        "commitment": {
+          "name": "Full-Time"
+        },
+        "seniority": "ml",
+        "seniorityName": "Data Engineer",
+        "company": {
+          "name": "Harvard Business School",
+          "country": "United States of America"
+        },
+        "category": "Data",
+        "requiredSkills": [
+          {
+            "id": 83,
+            "minLevel": 1,
+            "level": 4,
+            "skill": {
+              "id": 3,
+              "name": "Python"
+            }
+          },
+          {
+            "id": 213,
+            "minLevel": 1,
+            "level": 4,
+            "skill": {
+              "id": 6,
+              "name": "SQL"
+            }
+          },
+          {
+            "id": 263,
+            "minLevel": 1,
+            "level": 4,
+            "skill": {
+              "id": 78,
+              "name": "AWS"
+            }
+          }
+        ],
+        "createdAt": "2026-09-09T17:09:24.246492",
+        "description": "Along with our partner, we are seeking a Data Engineer to be a pioneer in business, education, and global impact by joining their Digital Transformation team a \u201cstartup with assets,\u201d where you will ha",
+        "city": "",
+        "state": "",
+        "minSalary": 40,
+        "maxSalary": 50,
+        "salaryType": "hourly",
+        "annualSalary": 0,
+        "annualMaxSalary": 0,
+        "usaOnly": false,
+        "subtitle": "",
+        "salaryBasedOnExperience": false,
+        "includeMaxSalary": true,
+        "fixedSalary": false
+      },
+      {
+        "id": 3324,
+        "name": "Lead Full-Stack Developer",
+        "commitment": {
+          "name": "Full-Time"
+        },
+        "seniority": "sr",
+        "seniorityName": "Sr. Lead Full-Stack Developer",
+        "company": {
+          "name": "Future Wise",
+          "country": "United States of America"
+        },
+        "category": "Engineering",
+        "requiredSkills": [
+          {
+            "id": 6433,
+            "minLevel": 1,
+            "level": 10,
+            "skill": {
+              "id": 957,
+              "name": ".NET"
+            }
+          },
+          {
+            "id": 9518,
+            "minLevel": 1,
+            "level": 5,
+            "skill": {
+              "id": 1430,
+              "name": "TypeScript/React"
+            }
+          },
+          {
+            "id": 247,
+            "minLevel": 1,
+            "level": 4,
+            "skill": {
+              "id": 604,
+              "name": "PostgreSQL"
+            }
+          }
+        ],
+        "createdAt": "2026-06-26T20:01:04.609445",
+        "description": "Along with our partner, they are building an Affordable Care Act (ACA) enrollment platform that connects directly to Healthcare.gov as an Enhanced Direct Enrollment (EDE) provider. Their software help",
+        "city": "",
+        "state": "",
+        "minSalary": 150000,
+        "maxSalary": 180000,
+        "salaryType": "annualy",
+        "annualSalary": 150000,
+        "annualMaxSalary": 180000,
+        "usaOnly": true,
+        "subtitle": "",
+        "salaryBasedOnExperience": false,
+        "includeMaxSalary": true,
+        "fixedSalary": false
+      }
+    ],
+    "pagination": {
+      "count": 43,
+      "countPages": 5,
+      "current": 1,
+      "prev": 1,
+      "next": 2
+    }
+  }
+}

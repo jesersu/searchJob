@@ -39,9 +39,10 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
   - Register in `registry.ts`. Fixture + tests.
   - Checks: `pnpm test`, `pnpm typecheck`, live `pnpm jobs roles/mobile-latam.md` shows `lever:<n>` with no failure line.
   - Evidence: commit 59af7cc. RED: suite failed with `Cannot find module '@infra/sources/LeverSource'`. GREEN: `pnpm test` 10 files / 146 tests passed; `pnpm typecheck` clean; live run printed `lever:15` and no lever failure line (torre 400 expected until T3). Salary uses a plausibility floor of 100 because Lever publishes placeholder `min: 1` ranges; one failing board is skipped unless all fail.
-- [ ] T2 — TeclaSource (route: delegated; trigger: 2+ non-trivial files)
+- [x] T2 — TeclaSource (route: delegated; trigger: 2+ non-trivial files)
   - Verify pagination/query params and the public job URL first. Map to `Job`. Register. Fixture + tests.
   - Checks: same as T1, expecting `tecla:<n>`.
+  - Evidence: commit HASH_T2. Verified by curl: `?page=N` paginates (9 jobs/page, 43 jobs, 5 pages, page 6 returns an empty list); `search`, `name`, `limit`, `page_size`, `pageSize` are ignored. Public job URL is `https://app.tecla.io/job?id=<id>` (route `/job/` and the listing's own link in the bundle); the SPA answers 200 for any path, so this is bundle-verified, not status-verified. RED: `Cannot find module '@infra/sources/TeclaSource'`; one GREEN-phase failure (timestamp zone) fixed. GREEN: `pnpm test` 11 files / 159 tests (also under TZ=Asia/Tokyo); `pnpm typecheck` clean; live run printed `tecla:43` and no tecla failure line. Job is built without `buildJob` because `canonicalUrl` strips `?id=` and would merge all jobs into one.
 - [ ] T3 — Torre repair (route: delegated; trigger: reading that prepares a write)
   - Find the current opportunities search contract (torre.ai web bundle / network calls / public docs). Fix `TorreSource` and the stale `SIZE` comment if needed. Add a fixture + test for the request shape and the mapping.
   - If no public unauthenticated contract works: STOP, change nothing in `TorreSource`, and return the gap with evidence. Removing or disabling the source is a user decision.
@@ -55,13 +56,14 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
 
 ## Delivery
 
-Strategy: `ask-on-risk`. Forecast: ~400 authored lines (Lever ~150, Tecla ~170, Torre ~80) — at the budget, single PR against `develop` expected. Running count: ~330 authored lines (T1).
+Strategy: `ask-on-risk`. Forecast: ~400 authored lines (Lever ~150, Tecla ~170, Torre ~80) — at the budget, single PR against `develop` expected. Running count: ~700 authored lines (T1 ~330, T2 ~370).
 
 ## Progress
 
 - 2026-10-09: document created, evidence recorded, branch created.
 - 2026-10-09: T1 LeverSource done.
+- 2026-10-09: T2 TeclaSource done.
 
 ## Next step
 
-T2 (TeclaSource).
+T3 (Torre repair).
