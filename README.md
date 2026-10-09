@@ -111,6 +111,7 @@ Adding a board is one file in `sources/` and one line in `sources/registry.ts`.
 | | | *tags dropped: unreliable* | |
 | We Work Remotely | RSS, fixed category | no | no |
 | Arbeitnow | REST API, paginated | no | no |
+| Lever | public postings API per board slug (default `coderio`) | no | when published (USD) |
 
 **LinkedIn's date filter runs server-side.** When `max_age_days` is set,
 `LinkedInGuestSource` sends `f_TPR=r{seconds}` — LinkedIn's own "Time Posted

@@ -34,8 +34,9 @@ flowchart TD
     C --> S4["LinkedIn"]
     C --> S5["We Work Remotely"]
     C --> S6["Arbeitnow"]
+    C --> S7["Lever"]
 
-    S1 & S2 & S3 & S4 & S5 & S6 --> N["Normalize<br/><i>each adapter maps its own shape to Job</i>"]
+    S1 & S2 & S3 & S4 & S5 & S6 & S7 --> N["Normalize<br/><i>each adapter maps its own shape to Job</i>"]
     N --> D1["Dedupe by canonical URL"]
     D1 --> F["Filter<br/><i>9 rejection reasons</i>"]
     F --> R["Score<br/><i>5 weighted factors</i>"]
@@ -131,6 +132,7 @@ classDiagram
     JobSource <|.. LinkedInGuestSource
     JobSource <|.. WeWorkRemotelySource
     JobSource <|.. ArbeitnowSource
+    JobSource <|.. LeverSource
     JobRepository <|.. SqliteJobRepository
     RoleReader <|.. MarkdownRoleReader
 ```

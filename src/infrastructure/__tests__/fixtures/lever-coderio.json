@@ -1,0 +1,82 @@
+[
+  {
+    "id": "bfa73046-169e-4721-a54a-e17db64092ac",
+    "text": "Sr AWS Data Architect",
+    "hostedUrl": "https://jobs.lever.co/coderio/bfa73046-169e-4721-a54a-e17db64092ac",
+    "applyUrl": "https://jobs.lever.co/coderio/bfa73046-169e-4721-a54a-e17db64092ac/apply",
+    "createdAt": 1789507607601,
+    "categories": {
+      "commitment": "Lite | Global LATAM",
+      "department": "Technology",
+      "location": "Colombia",
+      "team": "Engineering",
+      "allLocations": [
+        "Colombia",
+        "México",
+        "Argentina",
+        "Peru",
+        "Ecuador"
+      ]
+    },
+    "country": "CO",
+    "workplaceType": "remote",
+    "descriptionPlain": "",
+    "descriptionBodyPlain": "",
+    "additionalPlain": "",
+    "salaryRange": {
+      "min": 1,
+      "max": 1,
+      "currency": "USD",
+      "interval": "per-month-salary"
+    }
+  },
+  {
+    "id": "7f739dd1-6c8b-45ab-8f3e-9d8e20d6b69b",
+    "text": "Java Backend Sr - Miami",
+    "hostedUrl": "https://jobs.lever.co/coderio/7f739dd1-6c8b-45ab-8f3e-9d8e20d6b69b",
+    "applyUrl": "https://jobs.lever.co/coderio/7f739dd1-6c8b-45ab-8f3e-9d8e20d6b69b/apply",
+    "createdAt": 1781719060772,
+    "categories": {
+      "commitment": "Contract | Hybrid",
+      "department": "Technology",
+      "location": "Miami, Florida",
+      "team": "Engineering",
+      "allLocations": [
+        "Miami, Florida"
+      ]
+    },
+    "country": "US",
+    "workplaceType": "onsite",
+    "descriptionPlain": "About Us\nCoderio designs and delivers scalable digital solutions for global companies. We combine strong technical expertise with a product mindset to lead complex software initiatives end-to-end. We work with international clients, value autonomy and clear communication, and build long-term partner",
+    "descriptionBodyPlain": "About Us\nCoderio designs and delivers scalable digital solutions for global companies. We combine strong technical expertise with a product mindset to lead complex software initiatives end-to-end. We work with international clients, value autonomy and clear communication, and build long-term partner",
+    "additionalPlain": ""
+  },
+  {
+    "id": "cfad9fb3-046d-4118-b9ac-a3f138a4730e",
+    "text": "Devops Engineer Ssr / Sr",
+    "hostedUrl": "https://jobs.lever.co/coderio/cfad9fb3-046d-4118-b9ac-a3f138a4730e",
+    "applyUrl": "https://jobs.lever.co/coderio/cfad9fb3-046d-4118-b9ac-a3f138a4730e/apply",
+    "createdAt": 1790189319777,
+    "categories": {
+      "commitment": "Global | LATAM",
+      "department": "Technology",
+      "location": "Asunción",
+      "team": "Engineering",
+      "allLocations": [
+        "Asunción",
+        "Paraguay"
+      ]
+    },
+    "country": "PY",
+    "workplaceType": "hybrid",
+    "descriptionPlain": "",
+    "descriptionBodyPlain": "",
+    "additionalPlain": "",
+    "salaryRange": {
+      "min": 0,
+      "max": 0,
+      "currency": "USD",
+      "interval": "per-month-salary"
+    }
+  }
+]

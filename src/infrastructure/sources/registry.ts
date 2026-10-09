@@ -1,6 +1,7 @@
 import type { JobSource } from '@domain/ports/JobSource'
 import { ArbeitnowSource } from './ArbeitnowSource.js'
 import { GetOnBoardSource } from './GetOnBoardSource.js'
+import { LeverSource } from './LeverSource.js'
 import { LinkedInGuestSource } from './LinkedInGuestSource.js'
 import { RemoteOkSource } from './RemoteOkSource.js'
 import { TorreSource } from './TorreSource.js'
@@ -20,6 +21,7 @@ export function defaultSources(): JobSource[] {
     new LinkedInGuestSource(),
     new WeWorkRemotelySource(),
     new ArbeitnowSource(),
+    new LeverSource(),
   ]
 }
 
