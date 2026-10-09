@@ -6,7 +6,12 @@ import { delay, fetchJson } from '../http.js'
 import { buildJob, stripHtml, toDate } from './support.js'
 
 const ENDPOINT = 'https://search.torre.co/opportunities/_search/'
-/** Torre answers 400 above 20 results per page. */
+/**
+ * Torre answers 400 to every User-Agent except the one its own web app sends.
+ * There is no official job search: the keyed API only fetches a job by id.
+ * This is an undocumented allowlist and may stop working without notice.
+ */
+const USER_AGENT = 'Torre-heda'
 const SIZE = 20
 const PAUSE_MS = 500
 
@@ -47,6 +52,7 @@ export class TorreSource implements JobSource {
     for (const query of allQueries(criteria)) {
       const payload = await fetchJson<TorreResponse>(`${ENDPOINT}?size=${SIZE}`, {
         method: 'POST',
+        userAgent: USER_AGENT,
         body: { 'skill/role': { text: query, experience: 'potential-to-develop' } },
       })
 
