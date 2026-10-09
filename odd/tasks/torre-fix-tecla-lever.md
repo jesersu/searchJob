@@ -49,6 +49,15 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
   - Checks: same as T1, expecting `torre:<n>` > 0 and no `torre falló` line.
   - BLOCKED (decision needed, no code changed): the 400 is a User-Agent gate. Torre's web bundle sends `User-Agent: Torre-heda` on `POST /opportunities/_search?size=N&aggregate=...`. With exactly that UA the current body returns 200 (also for size 20, 25 and 50, so the `SIZE` comment is stale); with a Chrome UA, `curl/8.7.1`, `searchJob/1.0`, `node`, `Mozilla/5.0` or no UA it returns 400. Fixing it means presenting Torre's first-party client identity to pass that gate; left for the user.
   - Evidence: commit `5527f4b`. User decision (2026-10-09): send `User-Agent: Torre-heda` after the official keyed API (`torre.ai/v1/openapi.json`) was found to have no job search, only `GET /v1/jobs/{jobId}`. RED observed: `expected 'Mozilla/5.0 …' to be 'Torre-heda'`. `pnpm test` 163 passed (12 files); `pnpm typecheck` clean; live run `torre:290`, no failure line. Touched `src/infrastructure/http.ts` (optional `userAgent` override), outside the original writer surface, done inline by the parent. Risk: undocumented allowlist, may break without notice.
+- [x] T4 — Reliability fixes from the review of the full branch (route: delegated; trigger: 2+ non-trivial files)
+  - Reason: accepted by the user on 2026-10-09 after the approved review listed them as non-blocking findings.
+  - T4a Tecla pagination: a failure on a page after the first keeps the jobs already collected and reports the partial read; reaching `MAX_PAGES` with pages still pending is reported, not silent.
+  - T4b Lever boards: when some boards fail and others succeed, the failed slugs are reported instead of dropped silently.
+  - T4c Lever description: do not concatenate `descriptionPlain` and `descriptionBodyPlain` when they carry the same text.
+  - T4d Null elements: a `null` or primitive element in the payload is skipped in both mappers instead of failing the whole source.
+  - Constraint: the domain port `JobSource` does not change; reporting uses an existing infrastructure convention if there is one, otherwise a stderr warning.
+  - Checks: `pnpm test`, `pnpm typecheck`, live run still lists `lever` and `tecla` with no failure line.
+  - Evidence: commit `78254b4`. RED observed per item: T4a `expected "warn" to be called 1 times, but got 0 times` (MAX_PAGES) and `Error: 500 ... ?page=2` (later page threw); T4b `expected "warn" to be called 1 times, but got 0 times`; T4c `expected 'Build apps.\nBuild apps.\nPerks.' to be 'Build apps.\nPerks.'`; T4d `TypeError: Cannot read properties of null (reading 'text')` (Lever) and `(reading 'id')` (Tecla). Description rule from 15 of 15 live Lever postings: the two fields were identical, so a part contained in another is dropped. Warnings go to stderr via `console.warn` (`⚠ <source> falló parcialmente: ...`, helper in `support.ts`); no existing convention, port unchanged. GREEN: `pnpm test` 12 files / 171 tests, also under TZ=America/Lima and TZ=Asia/Tokyo; `pnpm typecheck` clean; live run `lever:15  tecla:43`, no failure line.
 
 ## Acceptance criteria
 
@@ -58,7 +67,7 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
 
 ## Delivery
 
-Strategy: `ask-on-risk`. Forecast: ~400 authored lines (Lever ~150, Tecla ~170, Torre ~80) — at the budget, single PR against `develop` expected. Running count: ~700 authored lines (T1 ~330, T2 ~370).
+Strategy: `ask-on-risk`. Forecast: ~400 authored lines (Lever ~150, Tecla ~170, Torre ~80) — at the budget, single PR against `develop` expected. Running count: ~900 authored lines (T1 ~330, T2 ~370, T3 ~80, T4 ~120).
 
 ## Progress
 
@@ -66,7 +75,8 @@ Strategy: `ask-on-risk`. Forecast: ~400 authored lines (Lever ~150, Tecla ~170, 
 - 2026-10-09: T1 LeverSource done.
 - 2026-10-09: T2 TeclaSource done.
 - 2026-10-09: T3 investigated, stopped before any change (see T3 note).
+- 2026-10-09: T3 Torre fixed after the user decision; T4 reliability fixes done.
 
 ## Next step
 
-All three tasks are done. Push and pull request against `develop` are the user\'s decision.
+All four tasks are done. Push and pull request against `develop` are the user\'s decision.
