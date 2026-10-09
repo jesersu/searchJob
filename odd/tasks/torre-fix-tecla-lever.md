@@ -47,6 +47,7 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
   - Find the current opportunities search contract (torre.ai web bundle / network calls / public docs). Fix `TorreSource` and the stale `SIZE` comment if needed. Add a fixture + test for the request shape and the mapping.
   - If no public unauthenticated contract works: STOP, change nothing in `TorreSource`, and return the gap with evidence. Removing or disabling the source is a user decision.
   - Checks: same as T1, expecting `torre:<n>` > 0 and no `torre falló` line.
+  - BLOCKED (decision needed, no code changed): the 400 is a User-Agent gate. Torre's web bundle sends `User-Agent: Torre-heda` on `POST /opportunities/_search?size=N&aggregate=...`. With exactly that UA the current body returns 200 (also for size 20, 25 and 50, so the `SIZE` comment is stale); with a Chrome UA, `curl/8.7.1`, `searchJob/1.0`, `node`, `Mozilla/5.0` or no UA it returns 400. Fixing it means presenting Torre's first-party client identity to pass that gate; left for the user.
 
 ## Acceptance criteria
 
@@ -63,7 +64,8 @@ Strategy: `ask-on-risk`. Forecast: ~400 authored lines (Lever ~150, Tecla ~170, 
 - 2026-10-09: document created, evidence recorded, branch created.
 - 2026-10-09: T1 LeverSource done.
 - 2026-10-09: T2 TeclaSource done.
+- 2026-10-09: T3 investigated, stopped before any change (see T3 note).
 
 ## Next step
 
-T3 (Torre repair).
+T3 needs a user decision: send `User-Agent: Torre-heda`, or leave/replace/remove the Torre source.
