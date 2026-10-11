@@ -23,6 +23,7 @@ interface LeverPosting {
     readonly commitment?: string
     readonly department?: string
     readonly location?: string
+    readonly allLocations?: readonly string[]
     readonly team?: string
   }
   readonly salaryRange?: {
@@ -66,6 +67,20 @@ function descriptionOf(posting: LeverPosting): string {
     .join('\n')
 }
 
+/**
+ * `categories.location` is only the primary one. A posting open to several
+ * countries lists them all in `allLocations`, and the domain's location
+ * filter needs every one of them.
+ */
+function locationOf(posting: LeverPosting): string | null {
+  const categories = posting.categories ?? {}
+  const all = Array.isArray(categories.allLocations)
+    ? categories.allLocations.filter((place) => typeof place === 'string' && place.trim() !== '')
+    : []
+  if (all.length > 0) return all.join(', ')
+  return categories.location ?? posting.country ?? null
+}
+
 /** Pure mapping from Lever's postings array, so it is testable without the network. */
 export function mapLeverPostings(payload: unknown, board: string): Job[] {
   if (!Array.isArray(payload)) return []
@@ -90,7 +105,7 @@ export function mapLeverPostings(payload: unknown, board: string): Job[] {
         salaryUsdPerMonth: salary.usdPerMonth,
         salaryRaw: salary.raw,
         remote: posting.workplaceType === 'remote',
-        location: categories.location ?? posting.country ?? null,
+        location: locationOf(posting),
         publishedAt:
           typeof posting.createdAt === 'number' ? new Date(posting.createdAt) : null,
       }),

@@ -3,6 +3,8 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LeverSource, mapLeverPostings } from '@infra/sources/LeverSource'
 import type { SearchCriteria } from '@domain/SearchCriteria'
+import { assessEligibility } from '@domain/Location'
+import { mobileCriteria } from '@domain/__tests__/fixtures'
 
 const postings = JSON.parse(
   readFileSync(
@@ -41,12 +43,21 @@ describe('mapLeverPostings', () => {
     expect(hybrid?.remote).toBe(false)
   })
 
-  it('takes the location from the category, falling back to the country', () => {
+  it('lists every location the posting is open to, falling back to the category and the country', () => {
     const [first, second] = mapLeverPostings(postings, 'coderio')
-    expect(first?.location).toBe('Colombia')
+    expect(first?.location).toBe('Colombia, México, Argentina, Peru, Ecuador')
     expect(second?.location).toBe('Miami, Florida')
+    const onlyCategory = [{ ...(postings[0] as object), categories: { location: 'Colombia' } }]
+    expect(mapLeverPostings(onlyCategory, 'coderio')[0]?.location).toBe('Colombia')
     const noCategory = [{ ...(postings[0] as object), categories: {}, country: 'CO' }]
     expect(mapLeverPostings(noCategory, 'coderio')[0]?.location).toBe('CO')
+  })
+
+  // The primary location alone would scope this posting to Colombia.
+  it('keeps a posting open to the candidate country eligible when that country is required', () => {
+    const [first] = mapLeverPostings(postings, 'coderio')
+    const peruRequired = mobileCriteria({ zones: ['latam'], country: 'peru', requireCountry: true })
+    expect(first && assessEligibility(first, peruRequired)).toBe('match')
   })
 
   // Lever's range is a placeholder (min 1) or zero when the company publishes nothing.
