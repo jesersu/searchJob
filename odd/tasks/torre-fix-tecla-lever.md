@@ -58,6 +58,11 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
   - Constraint: the domain port `JobSource` does not change; reporting uses an existing infrastructure convention if there is one, otherwise a stderr warning.
   - Checks: `pnpm test`, `pnpm typecheck`, live run still lists `lever` and `tecla` with no failure line.
   - Evidence: commit `78254b4`. RED observed per item: T4a `expected "warn" to be called 1 times, but got 0 times` (MAX_PAGES) and `Error: 500 ... ?page=2` (later page threw); T4b `expected "warn" to be called 1 times, but got 0 times`; T4c `expected 'Build apps.\nBuild apps.\nPerks.' to be 'Build apps.\nPerks.'`; T4d `TypeError: Cannot read properties of null (reading 'text')` (Lever) and `(reading 'id')` (Tecla). Description rule from 15 of 15 live Lever postings: the two fields were identical, so a part contained in another is dropped. Warnings go to stderr via `console.warn` (`⚠ <source> falló parcialmente: ...`, helper in `support.ts`); no existing convention, port unchanged. GREEN: `pnpm test` 12 files / 171 tests, also under TZ=America/Lima and TZ=Asia/Tokyo; `pnpm typecheck` clean; live run `lever:15  tecla:43`, no failure line.
+- [x] T5 — Tecla US-only offers (route: inline; one source file plus its test)
+  - Reason: accepted by the user on 2026-10-11 from the second full-branch review. Live check on 2026-10-10: 3 of 42 Tecla offers had `usaOnly: true`.
+  - `usaOnly` now adds `United States` to the job location so the domain's location filter can reject it.
+  - Evidence: commit `52972bf`. RED observed: `expected null to be 'United States'`. `pnpm test` 173 passed (12 files); `pnpm typecheck` clean; live run lists `tecla:42` and `lever:14` with no failure or warning line.
+  - Not done, left as follow-ups from that review: nested null inside `requiredSkills`, a 200 response with `success: false` read as zero jobs, unchecked field types in Lever, two untested Tecla salary branches.
 
 ## Acceptance criteria
 
