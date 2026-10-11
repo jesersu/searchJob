@@ -63,6 +63,10 @@ Out: domain changes, scoring changes, role-file schema changes, any authenticate
   - `usaOnly` now adds `United States` to the job location so the domain's location filter can reject it.
   - Evidence: commit `52972bf`. RED observed: `expected null to be 'United States'`. `pnpm test` 173 passed (12 files); `pnpm typecheck` clean; live run lists `tecla:42` and `lever:14` with no failure or warning line.
   - Not done, left as follow-ups from that review: nested null inside `requiredSkills`, a 200 response with `success: false` read as zero jobs, unchecked field types in Lever, two untested Tecla salary branches.
+- [x] T6 — Lever locations (route: inline; one source file plus its test)
+  - Reason: accepted by the user on 2026-10-11 from the third full-branch review. Live check that day: 5 of 14 Coderio postings listed Peru in `categories.allLocations` while `categories.location` named another country.
+  - The job location now joins every entry of `allLocations`, falling back to `categories.location`, then `country`.
+  - Evidence: commit `1454c84`. RED observed: `expected 'Colombia' to be 'Colombia, México, Argentina, Peru, Ec…'` and `expected 'conflict' to be 'match'` for `assessEligibility` with `requireCountry: true`, `country: peru`. `pnpm test` 174 passed (12 files); `pnpm typecheck` clean; live run lists `lever:14` and `tecla:42` with no failure or warning line.
 
 ## Acceptance criteria
 
