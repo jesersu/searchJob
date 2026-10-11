@@ -3,6 +3,8 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TeclaSource, mapTeclaJobs } from '@infra/sources/TeclaSource'
 import type { SearchCriteria } from '@domain/SearchCriteria'
+import { assessEligibility } from '@domain/Location'
+import { mobileCriteria } from '@domain/__tests__/fixtures'
 
 const page = JSON.parse(
   readFileSync(
@@ -44,6 +46,18 @@ describe('mapTeclaJobs', () => {
 
   it('treats every offer as remote', () => {
     expect(jobs.every((j) => j.remote)).toBe(true)
+  })
+
+  // Without this a US-only offer looks like an unrestricted remote job.
+  it('scopes a US-only offer to the United States so the location filter can reject it', () => {
+    const usOnly = jobs.find((j) => j.title === 'Lead Full-Stack Developer')
+    expect(usOnly?.location).toBe('United States')
+    const latamOnly = mobileCriteria({ zones: ['latam'], country: 'peru' })
+    expect(usOnly && assessEligibility(usOnly, latamOnly)).toBe('conflict')
+  })
+
+  it('leaves the location open for offers that are not US-only', () => {
+    expect(jobs[0]?.location).toBeNull()
   })
 
   it('uses the monthly salary as USD per month', () => {

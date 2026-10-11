@@ -22,6 +22,7 @@ interface TeclaJob {
   readonly requiredSkills?: readonly { readonly skill?: { readonly name?: string } }[]
   readonly city?: string
   readonly state?: string
+  readonly usaOnly?: boolean
   readonly minSalary?: number
   readonly maxSalary?: number
   readonly annualSalary?: number
@@ -73,7 +74,11 @@ export function mapTeclaJobs(entries: unknown): Job[] {
     const skills = (entry.requiredSkills ?? [])
       .map((s) => s.skill?.name)
       .filter((name): name is string => Boolean(name))
-    const location = [entry.city, entry.state].filter(Boolean).join(', ')
+    // A US-only offer is remote but not open to other countries; naming the
+    // country lets the domain's location filter decide.
+    const location = [entry.city, entry.state, entry.usaOnly ? 'United States' : null]
+      .filter(Boolean)
+      .join(', ')
 
     jobs.push({
       // buildJob would canonicalize away "?id=", merging every job into one.
