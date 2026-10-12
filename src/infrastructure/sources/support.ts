@@ -52,3 +52,12 @@ export function asStringArray(value: unknown): string[] {
 export function buildJob(partial: Omit<Job, 'id'> & { url: string }): Job {
   return { ...partial, id: jobId(partial.url), url: canonicalUrl(partial.url) }
 }
+
+/** One stderr line for a source that returned part of its data; same style as the reporter's failure line. */
+export function warnPartial(source: string, detail: string): void {
+  console.warn(`⚠ ${source} falló parcialmente: ${detail}`)
+}
+
+export function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}

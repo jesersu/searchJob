@@ -8,6 +8,8 @@ export interface FetchOptions {
   readonly body?: unknown
   readonly timeoutMs?: number
   readonly accept?: string
+  /** Overrides the default browser User-Agent for hosts that gate on it. */
+  readonly userAgent?: string
 }
 
 async function request(url: string, options: FetchOptions): Promise<Response> {
@@ -18,7 +20,7 @@ async function request(url: string, options: FetchOptions): Promise<Response> {
     return await fetch(url, {
       method: options.method ?? 'GET',
       headers: {
-        'User-Agent': USER_AGENT,
+        'User-Agent': options.userAgent ?? USER_AGENT,
         Accept: options.accept ?? 'application/json',
         ...(options.body === undefined ? {} : { 'Content-Type': 'application/json' }),
       },
